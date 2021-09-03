@@ -10,6 +10,10 @@ $graph:
       doc: Sentinel-2 SAFE Directory
       label: Sentinel-2 SAFE Directory
       type: Directory[]
+    aoi: 
+      doc: Area of interest expressed as Well-Known-Text
+      label: Area of interest
+      type: string
 
   outputs:
   - id: wf_outputs
@@ -29,7 +33,8 @@ $graph:
   
       in:
         safe: safe
-  
+        aoi: aoi
+
       out:
       - results
       
@@ -56,10 +61,16 @@ $graph:
   
     safe:
       inputBinding:
-        position: 2
+        position: 1
         prefix: -PInput=
         separate: false
       type: Directory
+    aoi:
+      inputBinding:
+        position: 2
+        prefix: -Paoi=
+        separate: false
+      type: string
   
   outputs:
   
@@ -107,10 +118,27 @@ $graph:
                     <resampleOnPyramidLevels>true</resampleOnPyramidLevels>
                     </parameters>
                 </node>
+                <node id="Subset">
+                    <operator>Subset</operator>
+                    <sources>
+                    <sourceProduct refid="Resample"/>
+                    </sources>
+                    <parameters class="com.bc.ceres.binding.dom.XppDomElement">
+                    <sourceBands/>
+                    <region>0,0,0,0</region>
+                    <referenceBand/>
+                    <geoRegion>$aio</geoRegion>
+                    <subSamplingX>1</subSamplingX>
+                    <subSamplingY>1</subSamplingY>
+                    <fullSwath>false</fullSwath>
+                    <tiePointGridNames/>
+                    <copyMetadata>true</copyMetadata>
+                    </parameters>
+                </node>
                 <node id="BiophysicalOp">
                     <operator>BiophysicalOp</operator>
                     <sources>
-                    <sourceProduct refid="Resample"/>
+                    <sourceProduct refid="Subset"/>
                     </sources>
                     <parameters class="com.bc.ceres.binding.dom.XppDomElement">
                     <sensor>S2A</sensor>
